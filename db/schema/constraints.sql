@@ -61,10 +61,11 @@ alter table only ginzburg_food.courier
 	check (coefficient between 0.1 and 0.5);
 
 alter table only ginzburg_food.courier
-	add constraint courier_dissmissal_date_check
-	check (
-	(status = 'уволен' and dissmissal_date is not null)
-	);
+    add constraint courier_dismissal_date_check
+    check (
+        status != 'уволен'
+        or dissmissal_date is not null
+    );
 
 -- ginzburg_food.courier_pay
 
@@ -74,8 +75,7 @@ alter table only ginzburg_food.courier_pay
 alter table only ginzburg_food.courier_pay
 	add constraint courier_pay_courier_id_fkey
 	foreign key (courier_id)
-	references ginzburg_food.courier(courier_id)
-	on delete cascade;
+	references ginzburg_food.courier(courier_id);
 
 alter table only ginzburg_food.courier_pay
 	add constraint courier_pay_amount_check
@@ -113,7 +113,3 @@ alter table only ginzburg_food.product
 alter table only ginzburg_food.product
 	add constraint product_price_check
 	check (price >= 0);
-
-alter table only ginzburg_food.product
-		add constraint product_product_category_id_restaurant_id_key
-		unique (product_category_id, restaurant_id);

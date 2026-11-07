@@ -31,7 +31,7 @@ create table ginzburg_food.restaurant (
 
 create table ginzburg_food.courier (
 	courier_id uuid default exts.uuid_generate_v4(),
-	FIO varchar(150) not null,
+	fio varchar(150) not null,
 	phone_number char(11) not null,
 	status ginzburg_food.courier_status not null default 'свободен',
 	hire_date date not null,

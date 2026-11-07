@@ -122,7 +122,6 @@
 |`client`|`login`|BR-2.2|`UNIQUE (login)` на `client` — потому что BR-2.2 требует уникальный логин|
 |`client`|`phone_number`|BR-2.2|`UNIQUE (phone_number)` на `client` — потому что BR-2.2 требует уникальный номер телефона|
 |`restaurant`|`address_id`|BR-3.3|`UNIQUE (address_id)` на `restaurant` — потому что BR-3.3 запрещает двум ресторанам делить один адрес|
-|`product`|`product_category_id`, `restaurant_id`|BR-5.1|`UNIQUE (product_category_id, restaurant_id)` на `product` — потому что BR-5.1 требует, чтобы каждое блюдо принадлежало ровно одному ресторану и ровно одной категории|
 |---|---|---|---|
 |---|---|---|---|
 |---|---|---|---|
