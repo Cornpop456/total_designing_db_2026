@@ -63,3 +63,36 @@ create table ginzburg_food.product (
 	status ginzburg_food.product_status not null,
 	description text not null
 );
+
+create table ginzburg_food."order" (
+	order_id uuid default exts.uuid_generate_v4(),
+	courier_id uuid not null,
+	client_id uuid not null,
+	address_id uuid not null,
+	restaurant_id uuid not null,
+	order_timestamp timestamp not null default localtimestamp,
+	delivery_timestamp timestamp,
+	order_amount numeric(10,2) not null,
+	commission numeric(10,2) generated always as (round(order_amount * 0.10, 2)) stored,
+	total_amount numeric(10,2) generated always as (order_amount + round(order_amount * 0.10, 2)) stored,
+	status ginzburg_food.order_status not null default 'создан',
+	pay_status ginzburg_food.order_pay_status not null default 'ожидает',
+	description text not null
+);
+
+create table ginzburg_food.payment (
+	payment_id uuid default exts.uuid_generate_v4(),
+	order_id uuid not null,
+	payment_type ginzburg_food.payment_type not null,
+	amount numeric(10,2) not null,
+	transaction_id varchar(255) not null,
+	transaction_timestamp timestamp not null default localtimestamp,
+	status ginzburg_food.payment_status not null
+);
+
+create table ginzburg_food.order_structure (
+	order_id uuid not null,
+	product_id uuid not null,
+	restaurant_id uuid not null,
+	quantity numeric(10,3) not null
+);
