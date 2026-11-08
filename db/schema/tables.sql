@@ -76,7 +76,7 @@ create table ginzburg_food."order" (
 	commission numeric(10,2) generated always as (round(order_amount * 0.10, 2)) stored,
 	total_amount numeric(10,2) generated always as (order_amount + round(order_amount * 0.10, 2)) stored,
 	status ginzburg_food.order_status not null default 'создан',
-	pay_status ginzburg_food.order_pay_status not null default 'ожидает',
+	pay_status ginzburg_food.order_pay_status,
 	description text not null
 );
 

@@ -25,3 +25,33 @@ before insert or update of order_id, amount
 on ginzburg_food.payment
 for each row
 execute function ginzburg_food.check_payment_amount();
+
+-- ginzburg_food.order_structure
+
+create function ginzburg_food.increase_product_quantity()
+returns trigger
+language plpgsql
+as $$
+begin
+    if new.quantity <= 0 then
+        raise exception 'Order structure quantity must be greater than zero';
+    end if;
+
+    update ginzburg_food.order_structure
+    set quantity = quantity + new.quantity
+    where order_id = new.order_id
+      and product_id = new.product_id;
+
+    if found then
+        return null;
+    end if;
+
+    return new;
+end;
+$$;
+
+create trigger order_structure_merge
+before insert
+on ginzburg_food.order_structure
+for each row
+execute function ginzburg_food.increase_product_quantity();
