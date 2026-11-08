@@ -55,7 +55,7 @@
 **Какие атрибуты добавил в `payment` и почему** (BR-8.2):
 
 ```
-В payment добавлены payment_type, order_amount, amount, transaction_id,
+В payment добавлены payment_type, amount, transaction_id,
 transaction_timestamp и status: тип оплаты, сумма попытки, внешний
 идентификатор транзакции, время операции и результат попытки.
 ```
