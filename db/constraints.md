@@ -103,9 +103,21 @@ REFERENCES client_address(client_id, address_id)`.
 **Как реализована валидность `review.entity_id`:**
 
 ```
-[что сделал: полиморфизм / нормализация / гибрид.
-Если полиморфизм — обоснуй, почему нет FK.
-Если нормализация — обоснуй, почему выбрал этот путь.]
+Выбранный подход: гибридная модель
+
+Для хранения отзывов используется общая таблица review, в которой находятся основные данные отзыва: идентификатор, клиент, заказ, дата создания, текст, фотография, рейтинг и тип объекта, на который оставлен отзыв (entity_type).
+
+Для связи отзыва с конкретным объектом используются три отдельные таблицы:
+
+review_product - отзывы на блюда;
+
+review_restaurant - отзывы на рестораны;
+
+review_order - отзывы на заказы.
+
+Данный подход выбран, потому что общая таблица review позволяет не дублировать данные, которые являются общими для всех отзывов. Отдельные таблицы связей позволяют обеспечить соблюдение бизнес-правил за счёт внешних ключей, контролирующих ссылочную целостность.
+
+Полиморфное поле entity_type определяет тип объекта отзыва и позволяет на уровне backend и/или триггеров контролировать, чтобы в таблицы связей попадали только отзывы, соответствующие нужному типу.
 ```
 
 ---
@@ -129,9 +141,7 @@ REFERENCES client_address(client_id, address_id)`.
 |`order`|`delivery_timestamp`|`delivery_timestamp` IS NULL или `delivery_timestamp` >= `order_timestamp`|BR-7.13|`CHECK` на `order` — потому что BR-7.13 запрещает время окончания доставки раньше времени создания заказа|
 |`order`|`status`, `delivery_timestamp`|если `status` = 'доставлен', то `delivery_timestamp` не `NULL`|BR-7.12|`CHECK` на `"order"` — потому что BR-7.12 требует фиксировать время окончания доставки при статусе 'доставлен'|
 |`order_structure`|`quantity`|`quantity` > 0|BR-7.15|`CHECK (quantity > 0)` на `order_structure.quantity` — потому что BR-7.15 требует, чтобы количество было положительным числом|
-|---|---|---|---|---|
-|---|---|---|---|---|
-|---|---|---|---|---|
+|`review`|`rating`|1 <= `rating` <= 5|BR-9.4|`CHECK (rating BETWEEN 1 AND 5)` на `review.rating` — потому что BR-9.4 задаёт диапазон рейтинга отзыва|
 
 ---
 
@@ -146,11 +156,12 @@ REFERENCES client_address(client_id, address_id)`.
 |`payment`|`order_id` WHERE `status = 'успех'`|BR-8.1|Частичный уникальный индекс `UNIQUE (order_id) WHERE status = 'успех'` гарантирует не более одной успешной попытки оплаты на заказ|
 |`order_structure`|`order_id`, `product_id`|BR-7.16|`PRIMARY KEY (order_id, product_id)` на `order_structure` — потому что BR-7.16 запрещает повторять одно и то же блюдо в заказе|
 |`product`|`product_id`, `restaurant_id`|BR-7.3|`UNIQUE (product_id, restaurant_id)` нужно для составного FK, проверяющего ресторан блюда|
-|`order`|`order_id`, `restaurant_id`|BR-7.3|`UNIQUE (order_id, restaurant_id)` нужно для составного FK, проверяющего ресторан заказа|
-|---|---|---|---|
-|---|---|---|---|
-|---|---|---|---|
-|---|---|---|---|
+|`order`|`order_id`, `restaurant_id`|BR-7.3|`UNIQUE (order_id, restaurant_id)` нужно для составного FK из таблицы `order_structure`, который будет гарантировать, что ресторан пренадлежит заказу|
+|`order`|`order_id`, `client_id`|BR-9.2|`UNIQUE (order_id, client_id)` нужно для составного FK из таблицы `review`, который будет гарантировать, что заказ на который хочет сделать отзыв клиент пренадлежит ему|
+|`review`|`order_id`, `review_id`|BR-9.2|`UNIQUE (order_id, review_id)` нужно для составного FK из таблиц `review_product`, `review_restaurant`, `review_order`, который будет гарантировать, что отзыв пренадлежит заказу|
+|`review_product`|`order_id`, `product_id`|BR-9.5|`UNIQUE (order_id, product_id)` нужен так как BR-9.5 требует не более одного отзыва на одну позицию в рамках заказа|
+|`review_restaurant`|`order_id`, `restaurant_id`|BR-9.5|`UNIQUE (order_id, restaurant_id)` нужен так как BR-9.5 требует не более одного отзыва на ресторан в рамках заказа|
+|`review_order`|`order_id`|BR-9.5|`UNIQUE (order_id)` нужен так как BR-9.5 требует не более одного отзыва на сам заказ|
 
 
 Если UNIQUE частичный (с `WHERE`) — укажи условие в столбце «Столбцы» или отдельной строкой.
@@ -171,12 +182,14 @@ REFERENCES client_address(client_id, address_id)`.
 |`order`|`client_id`, `address_id`|`client_address`|BR-7.4|`FK (client_id, address_id) → client_address(client_id, address_id)` на `order` — потому что BR-7.4 требует, чтобы адрес доставки был адресом клиента, оформляющего заказ|
 |`order`|`restaurant_id`|`restaurant`|BR-7.2|`FK (restaurant_id) → restaurant(restaurant_id)` на `order` — потому что BR-7.2 требует привязать заказ к одному ресторану|
 |`payment`|`order_id`|`order`|BR-8.1|`FK (order_id) → order(order_id)` на `payment` — потому что BR-8.1 разрешает несколько попыток оплаты одного заказа|
-|`order_structure`|`order_id`, `restaurant_id`|`order`|BR-7.3|`FK (order_id, restaurant_id) → order(order_id, restaurant_id)` на `order_structure`, чтобы позиция заказа относилась к существующему заказу и его ресторану|
-|`order_structure`|`product_id`, `restaurant_id`|`product`|BR-7.3|`FK (product_id, restaurant_id) → product(product_id, restaurant_id)` на `order_structure`, чтобы блюдо позиции принадлежало ресторану заказа|
-|---|---|---|---|---|
-|---|---|---|---|---|
-|---|---|---|---|---|
-|---|---|---|---|---|
+|`order_structure`|`order_id`, `restaurant_id`|`order`|BR-7.3|`FK (order_id, restaurant_id) → order(order_id, restaurant_id)` на `order_structure`, потому что BR-7.3 требует, чтобы позиция заказа относилась к существующему заказу и его ресторану|
+|`order_structure`|`product_id`, `restaurant_id`|`product`|BR-7.3|`FK (product_id, restaurant_id) → product(product_id, restaurant_id)` на `order_structure`, потому что BR-7.3 требует, чтобы блюдо позиции принадлежало ресторану заказа|
+|`review`|`order_id`, `client_id`|`order`|BR-9.2|`FK (order_id, client_id) → order(order_id, client_id)` на `review`, потому что BR-9.2 требует чтобы отзыв всегда связан с конкретным заказом клиента|
+|`review_product`|`order_id`, `review_id`|`review`|BR-9.2|`FK (order_id, review_id) → review(order_id, review_id)` на `review_product`, проверяет, что отзыв на блюдо пренадлежит заказу|
+|`review_product`|`order_id`, `product_id`|`order_structure`|BR-9.2|`FK (order_id, product_id) → order_structure(order_id, product_id)` на `review_product`, проверяет, что блюдо на которое сделан отзыв пренадлежит заказу|
+|`review_restaurant`|`order_id`, `review_id`|`review`|BR-9.2|`FK (order_id, review_id) → review(order_id, review_id)` на `review_restaurant`, проверяет, что отзыв на ресторан пренадлежит заказу|
+|`review_restaurant`|`order_id`, `restaurant_id`|`order`|BR-9.2|`FK (order_id, restaurant_id) → order(order_id, restaurant_id)` на `review_restaurant`, проверяет, что ресторан на которое сделан отзыв пренадлежит заказу|
+|`review_order`|`order_id`, `review_id`|`review`|BR-9.2|`FK (order_id, review_id) → review(order_id, review_id)` на `review_order`, проверяет, что отзыв на заказ пренадлежит заказу|
 
 Если FK составной — выпиши все столбцы.
 
@@ -209,11 +222,7 @@ REFERENCES client_address(client_id, address_id)`.
 |`product`|`photo_url`|BR-5.6|`NULL` на `photo_url` — потому что BR-5.6 разрешает отсутствие фотографии блюда|
 |`order`|`delivery_timestamp`|BR-7.12|`NULL` на `delivery_timestamp` — потому что BR-7.12 разрешает не заполнять время окончания доставки до статуса 'доставлен'|
 |`order`|`pay_status`|BR-8.7|`NULL` на `pay_status` — потому что BR-8.7 требует наличие попыток платежа, для агрегированного статуса, если попыток еще не было, статус не может быть установлен и будет равен `NULL`|
-|---|---|---|---|
-|---|---|---|---|
-|---|---|---|---|
-|---|---|---|---|
-|---|---|---|---|
+|`review`|`photo_url`|BR-9.3|`NULL` на `photo_url` — потому что BR-9.3 разрешает отсутствие фотографии у отзыва|
 
 ---
 
@@ -227,10 +236,7 @@ REFERENCES client_address(client_id, address_id)`.
 |`order`|`pay_status`|`DEFAULT 'ожидает'`|Гарантирует, что у заказа будет валидный начальный статус оплаты заказа согласно BR-8.7|
 |`order`|`commission`|`GENERATED ALWAYS AS (round(order_amount * 0.10, 2)) STORED`|Комиссия автоматически рассчитывается как 10% от стоимости блюд согласно BR-1.4 и BR-7.10|
 |`order`|`total_amount`|`GENERATED ALWAYS AS (round(order_amount * 1.10, 2)) STORED`|Общая сумма автоматически рассчитывается как стоимость блюд плюс комиссия согласно BR-7.10|
-|---|---|---|---|
-|---|---|---|---|
-|---|---|---|---|
-|---|---|---|---|
+|`review`|`review_timestamp`|`DEFAULT localtimestamp`|Гарантирует, что по требованию BR-9.3 у отзыва будет валидное время создания|
 
 Если `commission` и/или `total_amount` — `GENERATED ALWAYS AS` — обоснуй здесь. Если обычные поля с `CHECK` — тоже обоснуй выбор.
 
@@ -256,20 +262,20 @@ BR-7.16. Одно и то же блюдо не может встречаться
 [Своими словами: все неключевые атрибуты зависят от полного PK (2НФ);
 нет транзитивных зависимостей (3НФ).
 
-Таблицы client, address, restaurant, courier, product_category, product, payment, order_structure находятся в 3НФ,
- поскольку все неключевые атрибуты зависят только от первичного ключа и не зависят друг от друга.
+Таблицы client, address, restaurant, courier, 
+product_category, product, payment, order_structure,
+review, review_order находятся в 3НФ,
+поскольку все неключевые атрибуты зависят только от простого первичного ключа и не зависят друг от друга.
+
+Таблицы review_product и review_restaurant находятся в 3НФ
+так как в обоих таблицах поле order_id зависит от всего составного первичного ключа. 
 
 Таблица client_address находится в 3НФ так как оба атрибута являются частью составного первичного ключа и неключевых атрибутов нет.
-
-Таблица order_structure использует restaurant_id как контролируемую
-денормализацию: значение дублирует ресторан заказа, но позволяет составными
-внешними ключами декларативно проверить BR-7.3 без триггера. Уникальность
-(order_id, product_id) отдельно запрещает повтор одной позиции.
 
 Таблица courier_pay находится в 3НФ так как неключевые атрибуты amount
 и coefficient_used зависят от всего составного первичного ключа (year, month, courier_id) и других зависимостей у них нет.
 
-Таблица order не находится в 3НФ из-за вычисляемых полей order.commission и order.total_amount, которые имеют транзитивные зависимости.
+Таблица order формально не находится в 3НФ из-за вычисляемых полей order.commission и order.total_amount, которые имеют транзитивные зависимости.
 
 Особые случаи:
 

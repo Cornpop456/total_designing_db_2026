@@ -96,3 +96,31 @@ create table ginzburg_food.order_structure (
 	restaurant_id uuid not null,
 	quantity numeric(10,3) not null
 );
+
+create table ginzburg_food.review (
+    review_id uuid default exts.uuid_generate_v4(),
+		client_id uuid not null,
+    review_timestamp timestamp not null default localtimestamp,
+		entity_type ginzburg_food.review_entity_type not null,
+		order_id uuid not null,
+    description text not null,
+    photo_url text,
+    rating numeric(3,2) not null
+);
+
+create table ginzburg_food.review_product (
+    review_id uuid not null,
+    order_id uuid not null,
+    product_id uuid not null
+);
+
+create table ginzburg_food.review_restaurant (
+    review_id uuid not null,
+    order_id uuid not null,
+    restaurant_id uuid not null
+);
+
+create table ginzburg_food.review_order (
+    review_id uuid not null,
+    order_id uuid not null
+);
