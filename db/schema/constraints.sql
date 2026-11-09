@@ -55,6 +55,12 @@ alter table ginzburg_food.courier
     check (
         status != 'уволен'
         or dissmissal_date is not null
+    ),
+
+	add constraint courier_dismissal_after_hire_check
+		check (
+			dissmissal_date is null
+			or dissmissal_date >= hire_date
     );
 
 -- ginzburg_food.courier_pay
@@ -176,8 +182,8 @@ alter table ginzburg_food.order_structure
 alter table ginzburg_food.review
     add constraint review_pkey primary key (review_id),
 
-    add constraint review_order_review_key
-        unique (order_id, review_id),
+    add constraint review_order_entity_key
+        unique (order_id, entity_type, entity_id),
 
     add constraint review_order_id_fkey
         foreign key (order_id, client_id)
@@ -185,47 +191,3 @@ alter table ginzburg_food.review
 
     add constraint review_rating_check
         check (rating between 1 and 5);
-
--- ginzburg_food.review_product
-
-alter table ginzburg_food.review_product
-    add constraint review_product_pkey primary key (review_id, product_id),
-
-    add constraint review_product_review_fkey
-        foreign key (order_id, review_id)
-        references ginzburg_food.review(order_id, review_id),
-
-    add constraint review_product_order_product_fkey
-        foreign key (order_id, product_id)
-        references ginzburg_food.order_structure(order_id, product_id),
-
-    add constraint review_product_order_product_key
-        unique (order_id, product_id);
-
--- ginzburg_food.review_restaurant
-
-alter table ginzburg_food.review_restaurant
-    add constraint review_restaurant_pkey primary key (review_id, restaurant_id),
-
-    add constraint review_restaurant_review_fkey
-        foreign key (order_id, review_id)
-        references ginzburg_food.review(order_id, review_id),
-
-    add constraint review_restaurant_order_restaurant_fkey
-        foreign key (order_id, restaurant_id)
-        references ginzburg_food."order"(order_id, restaurant_id),
-
-    add constraint review_restaurant_order_restaurant_key
-        unique (order_id, restaurant_id);
-
--- ginzburg_food.review_order
-
-alter table ginzburg_food.review_order
-    add constraint review_order_pkey primary key (review_id),
-
-    add constraint review_order_review_fkey
-        foreign key (order_id, review_id)
-        references ginzburg_food.review(order_id, review_id),
-
-    add constraint review_order_order_key
-        unique (order_id);

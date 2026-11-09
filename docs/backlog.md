@@ -88,9 +88,9 @@
 **AC:**
 
 - [ ] Триггерная функция `rating_change()` возвращает `TRIGGER`.
-- [ ] Триггер срабатывает на `INSERT`, `UPDATE` и `DELETE` в таблице `review`.
-- [ ] Если `entity_type = 'блюдо'`: пересчитывает `product.rating = AVG(review.rating)` по всем отзывам на это блюдо.
-- [ ] Если `entity_type = 'ресторан'`: пересчитывает `restaurant.rating = AVG(review.rating)` по всем отзывам на этот ресторан.
+- [x] Триггер срабатывает на `INSERT`, `UPDATE` и `DELETE` в таблице `review`.
+- [x] Если `entity_type = 'блюдо'`: пересчитывает `product.rating = AVG(review.rating)` по всем отзывам на это блюдо.
+- [x] Если `entity_type = 'ресторан'`: пересчитывает `restaurant.rating = AVG(review.rating)` по всем отзывам на этот ресторан.
 - [ ] Если `entity_type = 'заказ'`: ничего не пересчитывает (у заказа агрегата нет).
 - [ ] При удалении отзыва рейтинг пересчитывается.
 - [ ] При обновлении отзыва (`entity_type` или `entity_id` или `rating`) рейтинги пересчитываются для затронутых сущностей.

@@ -63,13 +63,17 @@ erDiagram
         text description
         time work_start
         time work_end
-        text company_details
+        varchar inn
+        varchar ogrn
+        varchar settlement_account
         numeric rating
         enum status
     }
     COURIER {
         uuid courier_id PK
-        varchar FIO
+        varchar last_name
+        varchar first_name
+        varchar patronymic
         char phone_number
         enum status
         date hire_date

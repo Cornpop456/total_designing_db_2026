@@ -55,3 +55,41 @@ before insert
 on ginzburg_food.order_structure
 for each row
 execute function ginzburg_food.increase_product_quantity();
+
+-- ginzburg_food.review
+
+create function ginzburg_food.validate_review_target()
+returns trigger
+language plpgsql
+as $$
+begin
+    if new.entity_type = 'блюдо'
+       and not exists (
+           select 1
+           from ginzburg_food.order_structure os
+           where os.order_id = new.order_id
+             and os.product_id = new.entity_id
+       ) then
+        raise exception 'Reviewed product must belong to the order';
+    elsif new.entity_type = 'ресторан'
+          and not exists (
+              select 1
+              from ginzburg_food."order" o
+              where o.order_id = new.order_id
+                and o.restaurant_id = new.entity_id
+          ) then
+        raise exception 'Reviewed restaurant must belong to the order';
+    elsif new.entity_type = 'заказ'
+          and new.entity_id != new.order_id then
+        raise exception 'Reviewed order must match order_id';
+    end if;
+
+    return new;
+end;
+$$;
+
+create trigger review_target_validation
+before insert or update of entity_type, entity_id, order_id
+on ginzburg_food.review
+for each row
+execute function ginzburg_food.validate_review_target();
