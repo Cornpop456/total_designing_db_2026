@@ -46,6 +46,12 @@
 
 ---
 
+## Режим повторного запуска `insert_test_data`
+
+Процедура `insert_test_data(value)` работает в режиме полной замены тестового
+набора. В начале каждого вызова она очищает таблицы тестовых данных через
+`TRUNCATE`, после чего создаёт новый согласованный набор.
+
 ## Ловушки
 
 Здесь — не готовые решения, а **фиксация того, как ты решил** каждую ловушку. Преподаватель читает, чтобы понять ход мысли.
@@ -126,8 +132,8 @@ restaurant или order. Триггер validate_review_target() проверя�
 |`restaurant`|`rating`|0 <= `rating` <= 5|BR-4.2|`CHECK (rating BETWEEN 0 AND 5)` на `restaurant.rating` — потому что BR-4.2 задаёт диапазон рейтинга|
 |`restaurant`|`work_end`, `work_start`|`work_end` > `work_start`|BR-4.4|`CHECK (work_end > work_start)` на `restaurant` — потому что BR-4.4 требует, чтобы время закрытия было позже времени открытия|
 |`courier`|`coefficient`|0.1 <= `coefficient` <= 0.5|BR-6.4|`CHECK (coefficient BETWEEN 0.1 AND 0.5)` на `courier.coefficient` — потому что BR-6.4 задаёт диапазон коэффициент |
-|`courier`|`status`, `dissmissal_date`|если `status` = 'уволен', то `dissmissal_date` не должен быть `NULL`|BR-6.3|`CHECK (status = 'уволен' AND dissmissal_date IS NOT NULL)` на `courier` — потому что BR-6.3 требует, чтобы уволенный курьер имел дату увольнения|
-|`courier`|`dissmissal_date`, `hire_date`|`dissmissal_date` IS NULL или `dissmissal_date` >= `hire_date`|BR-6.3|`CHECK (dissmissal_date IS NULL OR dissmissal_date >= hire_date)` запрещает увольнение до даты найма|
+|`courier`|`status`, `dismissal_date`|если `status` = 'уволен', то `dismissal_date` не должен быть `NULL`|BR-6.3|`CHECK (status = 'уволен' AND dismissal_date IS NOT NULL)` на `courier` — потому что BR-6.3 требует, чтобы уволенный курьер имел дату увольнения|
+|`courier`|`dismissal_date`, `hire_date`|`dismissal_date` IS NULL или `dismissal_date` >= `hire_date`|BR-6.3|`CHECK (dismissal_date IS NULL OR dismissal_date >= hire_date)` запрещает увольнение до даты найма|
 |`courier_pay`|`amount`|`amount` >= 0|BR-10.4|`CHECK (amount >= 0)` на `courier_pay.amount` — потому что BR-10.4 требует, чтобы сумма зарплаты была неотрицательной|
 |`courier_pay`|`coefficient_used`|0.1 <= `coefficient_used` <= 0.5|BR-6.4|`CHECK (coefficient_used BETWEEN 0.1 AND 0.5)` на `courier_pay.coefficient_used` — потому что BR-6.4 задаёт диапазон коэффициента|
 |`product`|`rating`|0 <= `rating` <= 5|BR-5.4|`CHECK (rating BETWEEN 0 AND 5)` на `product.rating` — потому что BR-5.4 задаёт диапазон рейтинга блюда|
@@ -206,7 +212,7 @@ restaurant или order. Триггер validate_review_target() проверя�
 |`address`|`apartment_office`|BR-3.2|`NULL` на `apartment_office` — потому что BR-3.2 указывает, что Квартира/офис — необязательна|
 |`restaurant`|`rating`|BR-9.7|`NULL` на `rating` — потому что BR-9.7 указывает, что если отзывов нет — рейтинг сущности = `NULL`|
 |`product`|`rating`|BR-9.7|`NULL` на `product` — потому что BR-9.7 указывает, что если отзывов нет — рейтинг сущности = `NULL`|
-|`courier`|`dissmissal_date`|BR-6.3|`NULL` на `dissmissal_date` — потому что BR-6.3 не требует дату увольнения у работающего курьера|
+|`courier`|`dismissal_date`|BR-6.3|`NULL` на `dismissal_date` — потому что BR-6.3 не требует дату увольнения у работающего курьера|
 |`product`|`photo_url`|BR-5.6|`NULL` на `photo_url` — потому что BR-5.6 разрешает отсутствие фотографии блюда|
 |`order`|`delivery_timestamp`|BR-7.12|`NULL` на `delivery_timestamp` — потому что BR-7.12 разрешает не заполнять время окончания доставки до статуса 'доставлен'|
 |`order`|`pay_status`|BR-8.7|`NULL` на `pay_status` — потому что BR-8.7 требует наличие попыток платежа, для агрегированного статуса, если попыток еще не было, статус не может быть установлен и будет равен `NULL`|

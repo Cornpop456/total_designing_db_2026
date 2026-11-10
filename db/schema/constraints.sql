@@ -54,13 +54,13 @@ alter table ginzburg_food.courier
 	add constraint courier_dismissal_date_check
     check (
         status != 'уволен'
-        or dissmissal_date is not null
+        or dismissal_date  is not null
     ),
 
 	add constraint courier_dismissal_after_hire_check
 		check (
-			dissmissal_date is null
-			or dissmissal_date >= hire_date
+			dismissal_date  is null
+			or dismissal_date  >= hire_date
     );
 
 -- ginzburg_food.courier_pay

@@ -39,7 +39,7 @@ create table ginzburg_food.courier (
 	phone_number char(11) not null,
 	status ginzburg_food.courier_status not null default 'свободен',
 	hire_date date not null,
-	dissmissal_date date,
+	dismissal_date  date,
 	coefficient numeric(2,1) not null default 0.1
 );
 
