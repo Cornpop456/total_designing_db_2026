@@ -623,3 +623,23 @@ begin
     end loop;
 end;
 $$;
+
+create or replace procedure ginzburg_food.erase_test_data()
+language plpgsql
+as $$
+begin
+    truncate table
+        ginzburg_food.review,
+        ginzburg_food.payment,
+        ginzburg_food.order_structure,
+        ginzburg_food."order",
+        ginzburg_food.courier_pay,
+        ginzburg_food.product,
+        ginzburg_food.restaurant,
+        ginzburg_food.client_address,
+        ginzburg_food.client,
+        ginzburg_food.address,
+        ginzburg_food.courier,
+        ginzburg_food.product_category;
+end;
+$$;

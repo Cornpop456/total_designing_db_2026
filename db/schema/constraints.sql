@@ -113,14 +113,22 @@ alter table ginzburg_food."order"
 	add constraint order_courier_id_fkey
 		foreign key (courier_id)
 		references ginzburg_food.courier(courier_id),
+	
+	add constraint order_client_id_fkey
+		foreign key (client_id)
+		references ginzburg_food.client(client_id),
 
-	add constraint order_client_address_fkey
-		foreign key (client_id, address_id)
-		references ginzburg_food.client_address(client_id, address_id),
+	add constraint order_address_id_fkey
+		foreign key (address_id)
+		references ginzburg_food.address(address_id),
 
 	add constraint order_restaurant_id_fkey
 		foreign key (restaurant_id)
 		references ginzburg_food.restaurant(restaurant_id),
+
+	add constraint order_client_address_fkey
+		foreign key (client_id, address_id)
+		references ginzburg_food.client_address(client_id, address_id),
 
 	add constraint order_id_restaurant_id_key 
 		unique (order_id, restaurant_id),
@@ -185,7 +193,15 @@ alter table ginzburg_food.review
     add constraint review_order_entity_key
         unique (order_id, entity_type, entity_id),
 
-    add constraint review_order_id_fkey
+		add constraint review_order_id_fkey
+        foreign key (order_id)
+        references ginzburg_food."order"(order_id),
+
+		add constraint review_client_id_fkey
+        foreign key (client_id)
+        references ginzburg_food.client(client_id),
+
+    add constraint review_order_client_fkey
         foreign key (order_id, client_id)
         references ginzburg_food."order"(order_id, client_id),
 

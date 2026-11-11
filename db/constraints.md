@@ -178,12 +178,16 @@ restaurant или order. Триггер validate_review_target() проверя�
 |`product`|`product_category_id`|`product_category`|BR-5.1|`FK (product_category_id) → product_category(product_category_id)` на `product` — потому что BR-5.1 требует, чтобы каждое блюдо принадлежало ровно одной категории|
 |`product`|`restaurant_id`|`restaurant`|BR-5.1|`FK (restaurant_id) → restaurant(restaurant_id)` на `product` — потому что BR-5.1 требует, чтобы каждое блюдо принадлежало ровно одному ресторану|
 |`order`|`courier_id`|`courier`|BR-7.5|`FK (courier_id) → courier(courier_id)` на `order` — потому что BR-7.5 требует, чтобы доставку выполнял курьер|
+|`order`|`client_id`|`client`|BR-7.1|`FK (client_id) → client(client_id)` на `order` — потому что BR-7.1 требует, чтобы у заказа был клиент|
+|`order`|`address_id`|`address`|BR-7.4|`FK (address_id) → address(address_id)` на `order` — потому что BR-7.4 требует, у заказа был адрес|
 |`order`|`client_id`, `address_id`|`client_address`|BR-7.4|`FK (client_id, address_id) → client_address(client_id, address_id)` на `order` — потому что BR-7.4 требует, чтобы адрес доставки был адресом клиента, оформляющего заказ|
 |`order`|`restaurant_id`|`restaurant`|BR-7.2|`FK (restaurant_id) → restaurant(restaurant_id)` на `order` — потому что BR-7.2 требует привязать заказ к одному ресторану|
 |`payment`|`order_id`|`order`|BR-8.1|`FK (order_id) → order(order_id)` на `payment` — потому что BR-8.1 разрешает несколько попыток оплаты одного заказа|
 |`order_structure`|`order_id`, `restaurant_id`|`order`|BR-7.3|`FK (order_id, restaurant_id) → order(order_id, restaurant_id)` на `order_structure`, потому что BR-7.3 требует, чтобы позиция заказа относилась к существующему заказу и его ресторану|
 |`order_structure`|`product_id`, `restaurant_id`|`product`|BR-7.3|`FK (product_id, restaurant_id) → product(product_id, restaurant_id)` на `order_structure`, потому что BR-7.3 требует, чтобы блюдо позиции принадлежало ресторану заказа|
-|`review`|`order_id`, `client_id`|`order`|BR-9.2|`FK (order_id, client_id) → order(order_id, client_id)` на `review`, потому что BR-9.2 требует чтобы отзыв всегда связан с конкретным заказом клиента|
+|`review`|`order_id`|`order`|BR-9.2|`FK (order_id, client_id) → order(order_id)` на `review`, потому что BR-9.2 требует чтобы отзыв был связан с заказом|
+|`review`|`client_id`|`client`|BR-9.2|`FK (order_id, client_id) → client(client_id)` на `review`, потому что BR-9.2 требует чтобы отзыв был связан с клиентом|
+|`review`|`order_id`, `client_id`|`order`|BR-9.2|`FK (order_id, client_id) → order(order_id, client_id)` на `review`, потому что BR-9.2 требует чтобы клиент который делает отзыв соответствовал клиенту, который сделал заказ|
 
 Если FK составной — выпиши все столбцы.
 
